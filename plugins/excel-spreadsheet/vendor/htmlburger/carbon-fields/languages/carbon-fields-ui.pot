@@ -1,0 +1,40 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"X-Generator: babel-plugin-makepot\n"
+
+#: packages/core/fields/complex/index.js:146
+msgid "Couldn't create the label of group - %s"
+msgstr ""
+
+#: packages/core/fields/complex/index.js:344
+msgid "There are no entries yet."
+msgstr ""
+
+#: packages/core/fields/complex/index.js:401
+msgid "Expand All"
+msgstr ""
+
+#: packages/core/fields/complex/index.js:401
+msgid "Collapse All"
+msgstr ""
+
+#: packages/core/fields/complex/index.js:428
+msgid "This field is required."
+msgstr ""
+
+#: packages/core/fields/complex/index.js:435
+msgid "Minimum number of rows not reached (%1$d %2$s)"
+msgstr ""
+
+#: packages/core/fields/complex/index.js:82
+msgid "Add %s"
+msgstr ""
+
+#: packages/core/fields/oembed/index.js:188
+msgid "An error occurred while trying to fetch oembed preview."
+msgstr ""
+
+#: packages/core/fields/oembed/index.js:203
+msgid "Not Found"
+msgstr ""
