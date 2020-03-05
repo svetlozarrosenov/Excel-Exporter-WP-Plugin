@@ -2,13 +2,13 @@
 namespace App\Spreadsheet;
 
 class AdminPage {
-	private $compatibilityObject;
+	private $adapterObject;
 	private $currentPostType;
 
 	private $pluginDir = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'excel-spreadsheet' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR;
 
-	public function __construct( CarbonFieldsCompatibility $CarbonFields ) {
-		$this->compatibilityObject = $CarbonFields;
+	public function __construct( CarbonFieldsAdapter $CarbonFields ) {
+		$this->adapterObject = $CarbonFields;
 		
 		$this->currentPostType = ! empty( $_GET['post_type'] ) ? $_GET['post_type'] : 'post';
 
@@ -19,14 +19,14 @@ class AdminPage {
 			if ( $post_type == 'post') {
 				$page_name = '';
 			}
-			
-			add_action( 'admin_menu', function() use ( $page_name ) {
+
+			add_action( 'admin_menu', function() use ( $page_name, $post_type ) {
 				add_submenu_page(
 				    "edit.php{$page_name}",
-				    __( 'Export', 'crb_xlsx_export' ),
-				    __( 'Export', 'crb_xlsx_export' ),
+				    __( 'Export', 'crb' ),
+				    __( 'Export', 'crb' ),
 				    'manage_options',
-				    'crb_xlsx_export',
+				    'crb_xlsx_export_' . $post_type,
 				    array( $this, 'ExportPage' )
 				);
 			} );
@@ -56,9 +56,8 @@ class AdminPage {
 	}
 
 	public function ExportPage() {
-		$this->render('posts', array( 'AdminPageInstance' => $this ) );
+		$this->render('form', array( 'adminPageInstance' => $this ) );
 
-		wp_enqueue_script('crb-vue', 'https://cdn.jsdelivr.net/npm/vue/dist/vue.js', array(), '1.0.0', true);
 		wp_enqueue_script('crb-main', plugins_url('../../resources/js/main.js', __FILE__), array(), '1.0.0', true);
 		wp_enqueue_style('crb_xlsx_export_styles', plugins_url('../../resources/css/style.css', __FILE__) );
 	}
@@ -85,12 +84,12 @@ class AdminPage {
 		$metaKeys = $wpdb->get_results( $sql, OBJECT_K ); 
 		
 		foreach( $metaKeys as $key => &$val ) {
-			if ( $this->compatibilityObject->isComplex( $key, "/(_)(?P<meta_key>[\w]+)((\|[a-z]+\|\d\|\d\|value)|(\|\|\|\d\|value))/" ) ) {
-				$new_key = $this->compatibilityObject->getComplexKey( $key, "/(_)(?P<meta_key>[\w]+)((\|[a-z]+\|\d\|\d\|value)|(\|\|\|\d\|value))/" );
+			if ( $this->adapterObject->isComplex( $key, "/(_)(?P<meta_key>[\w]+)((\|[a-z]+\|\d\|\d\|value)|(\|\|\|\d\|value))/" ) ) {
+				$new_key = $this->adapterObject->getComplexKey( $key, "/(_)(?P<meta_key>[\w]+)((\|[a-z]+\|\d\|\d\|value)|(\|\|\|\d\|value))/" );
 				unset( $metaKeys[ $key ] );
 				$metaKeys[ $new_key . '--repeater' ] = $new_key;
 			}
-			if ( $this->compatibilityObject->isEmptyComplex( $key ) ) {
+			if ( $this->adapterObject->isEmptyComplex( $key ) ) {
 				unset( $metaKeys[ $key ] );
 			}
 		}
@@ -98,11 +97,15 @@ class AdminPage {
 		unset( $metaKeys['_edit_last'] );
 		unset( $metaKeys['_edit_lock'] );
 
-		$postKeys = $this->compatibilityObject->getPostCommonExports();
+		$postKeys = $this->adapterObject->getPostCommonExports();
 
 		$metaKeys = array_merge( $postKeys, $metaKeys );
 
 		return $metaKeys;
+	}
+
+	public function getPostStatuses() {
+		return get_post_statuses();
 	}
 
 	public function getCurrentPostType() {

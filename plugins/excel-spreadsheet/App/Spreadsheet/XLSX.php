@@ -2,13 +2,15 @@
 namespace App\Spreadsheet;
 
 use \PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use \PhpOffice\PhpSpreadsheet\Spreadsheet;
+use \PhpOffice\PhpSpreadsheet\IOFactory;
 
 class XLSX {
-	private $compatibilityObject;
+	private $adapterObject;
 	private $currentPostType;
 
-	public function __construct( CarbonFieldsCompatibility $CarbonFields ) {
-		$this->compatibilityObject = $CarbonFields;
+	public function __construct( CarbonFieldsAdapter $CarbonFieldsAdapter ) {
+		$this->adapterObject = $CarbonFieldsAdapter;
 
 		$this->currentPostType = $this->getCurrentPostType();
 	}
@@ -18,19 +20,19 @@ class XLSX {
 	}
 
 	public function generate( $request ) {
-
 		if ( empty( $request ) || ! isset( $request['export'] ) ) {
 			return $this;
 		}
 
 		unset( $request['export'] );
-		unset( $request['crb_selected_posts'] );
 
 		$fileName =  dirname(dirname(dirname(__FILE__))) . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'data.xlsx';
 
 		$posts_exports = $this->getSelectedExports( $request );
 
-		$spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+		$posts_exports = apply_filters( 'post_exports', $posts_exports, $request );
+	
+		$spreadsheet = new Spreadsheet();
 
 		$row = 1;
 		$tableHead = [];
@@ -61,7 +63,7 @@ class XLSX {
 			$row += $rowINcrementationBecauseOfArray;
 		}
 
-		$writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, "Xlsx");
+		$writer = IOFactory::createWriter($spreadsheet, "Xlsx");
 
 		$writer->save( $fileName );
 
@@ -77,21 +79,39 @@ class XLSX {
 		return $val;
 	}
 
-	public function getSelectedExports( $request ) {
+	public function getAllPostsIds( $request ) {
+		if ( empty( $request['post_statuses'] ) ) {
+			$request['post_statuses'][] = 'publish';
+		}
+
+		$postStatuses = $request['post_statuses'];
+		$INStatement = 'IN("' . implode('", "', $postStatuses) . '")';
+
 		global $wpdb;
 		$ids = [];
-		$postIDs = $wpdb->get_results("SELECT ID FROM  $wpdb->posts WHERE post_type = '{$this->currentPostType}';");
+		$postIDs = $wpdb->get_results("SELECT ID FROM  $wpdb->posts WHERE post_type = '{$this->currentPostType}' AND post_status $INStatement;");
 		foreach ( $postIDs as $id ) {
 			$ids[] = $id->ID;
+		}
+		return $ids;
+	}
+	
+	public function getSelectedExports( $request ) {
+		if ( ! empty( $request['crb_selected_posts'] ) && $request['crb_selected_posts'] != 0 ) {
+			$ids[] = $request['crb_selected_posts'];
+			unset( $request['crb_selected_posts'] );
+		} else {
+			unset( $request['crb_selected_posts'] );
+			$ids = $this->getAllPostsIds( $request );
 		}
 
 		if ( ! isset( $ids ) ) {
 			return;
 		}
 
-		$postCommonSelectedExports = $this->compatibilityObject->getSelectedPostCommonExports( $request, $ids );
+		$postCommonSelectedExports = $this->adapterObject->getSelectedPostCommonExports( $request, $ids );
 
-		$postMetaSelectedExports = $this->compatibilityObject->getSelectedPostMetaExports( $request, $ids );
+		$postMetaSelectedExports = $this->adapterObject->getSelectedPostMetaExports( $request, $ids );
 
 		if ( empty( $postMetaSelectedExports ) ) {
 			return $postCommonSelectedExports;

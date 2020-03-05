@@ -8,6 +8,14 @@
 	xlsx
 \* ------------------------------------------------------------ */
 
-.xlsx { width: 60%; margin: 0 auto; background-color: red; }
+.xlsx { width: 80%; margin: 0 auto; }
 
 .xlsx .xlsx__container { padding-top: 100px; }
+
+/* ------------------------------------------------------------ *\
+	xlsx-export-form
+\* ------------------------------------------------------------ */
+
+.xlsx-export-form .xlsx-export-form__btn { padding: 7px 12px; border-radius: 2px; color: #fff; background-color: #007cba; border: none; }
+.xlsx-export-form .xlsx-export-form__btn:hover { opacity: .7; cursor: pointer; }
+

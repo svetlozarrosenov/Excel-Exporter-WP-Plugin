@@ -1,7 +1,7 @@
 <?php
 namespace App\Spreadsheet;
 
-interface Compatibility {
+interface Adapter {
 	public function prepareForXLSXImport( array $complex );
 
 	public function getSelectedPostCommonExports( $request, $postIDs );

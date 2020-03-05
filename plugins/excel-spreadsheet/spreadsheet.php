@@ -18,8 +18,8 @@ class ExcelSpreadsheet {
 			require 'vendor/autoload.php';
 
 			$container = new \App\Providers\Container( [
-				\App\Spreadsheet\CarbonFieldsCompatibility::class => function() {
-					return new \App\Spreadsheet\CarbonFieldsCompatibility();
+				\App\Spreadsheet\CarbonFieldsAdapter::class => function() {
+					return new \App\Spreadsheet\CarbonFieldsAdapter();
 				}
 			] );
 

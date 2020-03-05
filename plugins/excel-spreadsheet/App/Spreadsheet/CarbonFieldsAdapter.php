@@ -1,7 +1,7 @@
 <?php
 namespace App\Spreadsheet;
 
-class CarbonFieldsCompatibility implements Compatibility {
+class CarbonFieldsAdapter implements Adapter {
 	public function getSelectedPostCommonExports( $request, $postIDs ) {
     	foreach ( $postIDs as $postID ) {
     		$args = [];
@@ -62,6 +62,7 @@ class CarbonFieldsCompatibility implements Compatibility {
     	
 		return $postCommonTypes;
 	}
+	
 	public function getSelectedPostMetaExports( $request, $postIDs ) {
 		$commonExports = $this->getPostCommonExports();
 		$postMetaExports = [];
